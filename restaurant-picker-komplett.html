@@ -1,0 +1,2337 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Restaurant Picker - Finde dein nächstes Restaurant">
+  <title>Restaurant Picker</title>
+  
+  <style>
+    /* ===== CSS VARIABLEN ===== */
+    :root {
+      --primary-color: #2d6a4f;
+      --primary-dark: #1b4332;
+      --secondary-color: #6c757d;
+      --success-color: #40916c;
+      --danger-color: #d62828;
+      --warning-color: #f77f00;
+      
+      --bg-color: #f1f3f4;
+      --card-bg: #ffffff;
+      --text-color: #212529;
+      --text-muted: #6c757d;
+      --border-color: #dee2e6;
+      
+      --spacing-xs: 0.5rem;
+      --spacing-sm: 1rem;
+      --spacing-md: 1.5rem;
+      --spacing-lg: 2rem;
+      --spacing-xl: 3rem;
+      
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+      
+      --header-height: 60px;
+      --bottom-nav-height: 70px;
+      --border-radius: 12px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding-bottom: var(--bottom-nav-height);
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      background: linear-gradient(135deg, #1b4332, #2d6a4f);
+      color: white;
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-md);
+      z-index: 100;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .main-content {
+      min-height: calc(100vh - var(--header-height) - var(--bottom-nav-height));
+      padding-bottom: calc(var(--bottom-nav-height) + var(--spacing-lg));
+    }
+
+    .container {
+      padding: var(--spacing-md);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: var(--spacing-md);
+      color: var(--text-color);
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      margin-bottom: var(--spacing-sm);
+      color: var(--text-color);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .btn {
+      border: none;
+      border-radius: var(--border-radius);
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      display: inline-block;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 2px solid var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .btn-outline:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #bb2d3b;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-large {
+      width: 100%;
+      padding: var(--spacing-md);
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .btn-small {
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-size: 0.9rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+      margin-top: var(--spacing-md);
+    }
+
+    .button-group .btn {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .category-selection {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+
+    .category-checkbox {
+      display: flex;
+      align-items: center;
+      padding: var(--spacing-sm);
+      background-color: var(--bg-color);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .category-checkbox:hover {
+      background-color: rgba(45, 106, 79, 0.05);
+    }
+
+    .category-checkbox input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-right: var(--spacing-sm);
+      cursor: pointer;
+    }
+
+    .category-checkbox span {
+      font-size: 1rem;
+      flex: 1;
+    }
+
+    .result-card {
+      border: 3px solid var(--primary-color);
+      text-align: center;
+      animation: slideUp 0.5s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-card h3 {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .search-box {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: var(--spacing-sm);
+      font-size: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: var(--border-radius);
+      transition: border-color 0.3s ease;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .accordion-item {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--spacing-sm);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .accordion-header {
+      padding: var(--spacing-md);
+      background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      border-radius: var(--border-radius);
+      margin-bottom: 1px;
+    }
+
+    .accordion-header:hover {
+      filter: brightness(1.15);
+      transform: translateX(4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .accordion-header .count {
+      background: rgba(255,255,255,0.3);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+    }
+
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .accordion-content.open {
+      max-height: 5000px;
+    }
+
+    .restaurant-item {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .restaurant-item:last-child {
+      border-bottom: none;
+    }
+
+    .restaurant-info {
+      flex: 1;
+    }
+
+    .restaurant-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .restaurant-actions {
+      display: flex;
+      gap: var(--spacing-xs);
+      flex-wrap: wrap;
+    }
+
+    .restaurant-actions .btn {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .filter-card {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .filter-group {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .filter-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: var(--spacing-xs);
+      color: var(--text-color);
+    }
+
+    .filter-group input,
+    .filter-group select {
+      width: 100%;
+      padding: var(--spacing-sm);
+      font-size: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background-color: white;
+    }
+
+    .filter-group input:focus,
+    .filter-group select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .rated-card {
+      position: relative;
+    }
+
+    .rated-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .rated-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .overall-badge {
+      background: linear-gradient(135deg, #2d6a4f, #52b788);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .rating-details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-sm);
+      margin: var(--spacing-md) 0;
+    }
+
+    .rating-item {
+      background-color: var(--bg-color);
+      padding: var(--spacing-sm);
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .rating-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .rating-value {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--primary-color);
+    }
+
+    .rated-note {
+      background-color: #fff3cd;
+      padding: var(--spacing-sm);
+      border-radius: 8px;
+      border-left: 4px solid var(--warning-color);
+      margin-top: var(--spacing-sm);
+      font-style: italic;
+      color: #856404;
+    }
+
+    .rated-meta {
+      display: flex;
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-sm);
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background-color: var(--secondary-color);
+      color: white;
+    }
+
+    .text-muted {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: var(--spacing-xl);
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--bottom-nav-height);
+      background-color: #ffffff;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+      border-top: 1px solid var(--border-color);
+      z-index: 1000;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-xs);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: var(--text-muted);
+      height: 100%;
+    }
+
+    .nav-item.active {
+      color: var(--primary-color);
+      background-color: rgba(45, 106, 79, 0.08);
+      border-radius: 12px;
+    }
+
+    .nav-item:active {
+      transform: scale(0.95);
+    }
+
+    .nav-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .nav-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 2000;
+      overflow-y: auto;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: var(--border-radius);
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .modal-large {
+      max-width: 600px;
+    }
+
+    .modal-header {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: white;
+      font-size: 1.3rem;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: white;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+    }
+
+    .modal-body {
+      padding: var(--spacing-md);
+    }
+
+    .modal-footer {
+      padding: var(--spacing-md);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+    }
+
+    .modal-footer .btn {
+      flex: 1;
+    }
+
+    .form-group {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: var(--spacing-xs);
+      color: var(--text-color);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: var(--spacing-sm);
+      font-size: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      background-color: #ffffff;
+    }
+
+    .form-group select[size] {
+      height: auto;
+      overflow-y: auto;
+    }
+
+    .form-group select[size] option {
+      padding: var(--spacing-sm);
+      cursor: pointer;
+    }
+
+    .form-group select[size] option:hover {
+      background-color: var(--bg-color);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+    }
+
+    .form-group small {
+      display: block;
+      margin-top: var(--spacing-xs);
+      font-size: 0.85rem;
+    }
+
+    .rating-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .overall-rating {
+      background: linear-gradient(135deg, var(--warning-color), #ff8c42);
+      color: white;
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius);
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .overall-rating span {
+      font-size: 1.8rem;
+      font-weight: 700;
+      display: block;
+      margin-top: var(--spacing-xs);
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border-color);
+      margin: var(--spacing-md) 0;
+    }
+
+    @media (min-width: 768px) {
+      .rating-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .rating-details {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .button-group .btn {
+        min-width: 150px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      :root {
+        --header-height: 70px;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .container {
+        max-width: 800px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <h1>🍽️ Restaurant Picker</h1>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+    
+    <!-- ===== TAB 1: ZUFALL ===== -->
+    <section id="tab-random" class="tab-content active">
+      <div class="container">
+        <h2>Zufälliges Restaurant</h2>
+        
+        <div class="card">
+          <h3>Kategorien auswählen</h3>
+          <div class="category-selection">
+            <label class="category-checkbox">
+              <input type="checkbox" id="category-all" checked>
+              <span>Alle Kategorien</span>
+            </label>
+            <div id="category-list"></div>
+          </div>
+        </div>
+
+        <button id="btn-random-pick" class="btn btn-primary btn-large">
+          🎲 Zufällig auswählen
+        </button>
+
+        <div id="random-result" class="card result-card" style="display: none;">
+          <h3 id="random-restaurant-name"></h3>
+          <p id="random-restaurant-category" class="badge"></p>
+          <p id="random-restaurant-city" class="text-muted"></p>
+          
+          <div class="button-group">
+            <button id="btn-random-review" class="btn btn-secondary">War ich schon</button>
+            <button id="btn-random-again" class="btn btn-outline">Nochmal</button>
+            <button id="btn-random-to-list" class="btn btn-outline">Zur Liste</button>
+          </div>
+        </div>
+
+        <div id="random-empty" class="empty-state">
+          <p>🎯 Wähle Kategorien aus und drücke den Button!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TAB 2: LISTE ===== -->
+    <section id="tab-list" class="tab-content">
+      <div class="container">
+        <h2>Restaurant-Liste</h2>
+
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="🔍 Restaurant suchen...">
+        </div>
+
+        <button id="btn-add-restaurant" class="btn btn-primary btn-large">
+          ➕ Restaurant hinzufügen
+        </button>
+
+        <div id="restaurant-accordion" class="accordion"></div>
+
+        <div id="list-empty" class="empty-state" style="display: none;">
+          <p>📝 Noch keine Restaurants vorhanden.<br>Füge dein erstes Restaurant hinzu!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TAB 3: BEWERTET ===== -->
+    <section id="tab-rated" class="tab-content">
+      <div class="container">
+        <h2>Bewertete Restaurants</h2>
+
+        <button id="btn-add-review" class="btn btn-primary btn-large">
+          ⭐ Bewertung hinzufügen
+        </button>
+
+        <div class="card filter-card">
+          <h3>Filter & Sortierung</h3>
+          
+          <div class="filter-group">
+            <label for="filter-min-rating">Mindestbewertung:</label>
+            <input type="number" id="filter-min-rating" min="1" max="5" step="0.1" placeholder="z.B. 2.5">
+          </div>
+
+          <div class="filter-group">
+            <label for="filter-category">Kategorie:</label>
+            <select id="filter-category">
+              <option value="">Alle Kategorien</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filter-city">Stadt:</label>
+            <select id="filter-city">
+              <option value="">Alle Städte</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="sort-by">Sortieren nach:</label>
+            <select id="sort-by">
+              <option value="recent">Zuletzt besucht</option>
+              <option value="best">Bestbewertet</option>
+              <option value="alpha">Alphabetisch</option>
+            </select>
+          </div>
+
+          <button id="btn-apply-filters" class="btn btn-secondary btn-small">Filter anwenden</button>
+        </div>
+
+        <div id="rated-list"></div>
+
+        <div id="rated-empty" class="empty-state" style="display: none;">
+          <p>⭐ Noch keine Bewertungen vorhanden.<br>Bewerte dein erstes Restaurant!</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== BOTTOM NAVIGATION ===== -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="random">
+      <span class="nav-icon">🎲</span>
+      <span class="nav-label">Zufall</span>
+    </button>
+    <button class="nav-item" data-tab="list">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">Liste</span>
+    </button>
+    <button class="nav-item" data-tab="rated">
+      <span class="nav-icon">⭐</span>
+      <span class="nav-label">Bewertet</span>
+    </button>
+    <button class="nav-item" data-tab="settings">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Einstellungen</span>
+    </button>
+  </nav>
+
+  <!-- ===== MODAL: RESTAURANT HINZUFÜGEN/BEARBEITEN ===== -->
+  <div id="modal-restaurant" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-restaurant-title">Restaurant hinzufügen</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-restaurant-name">Name *</label>
+          <input type="text" id="input-restaurant-name" required>
+        </div>
+        <div class="form-group">
+          <label for="input-restaurant-category">Kategorie *</label>
+          <select id="input-restaurant-category"></select>
+        </div>
+        <div class="form-group">
+          <label for="input-restaurant-city">Stadt</label>
+          <input type="text" id="input-restaurant-city">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-restaurant" class="btn btn-primary">Speichern</button>
+        <button class="btn btn-outline modal-close">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: BEWERTUNG ===== -->
+  <div id="modal-review" class="modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2 id="modal-review-title">Restaurant bewerten</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="review-city">Stadt</label>
+          <input type="text" id="review-city">
+        </div>
+
+        <div class="rating-grid">
+          <div class="form-group">
+            <label for="review-ambience">Ambiente</label>
+            <input type="number" id="review-ambience" min="1" max="5" step="0.5" placeholder="1-5">
+          </div>
+          <div class="form-group">
+            <label for="review-staff">Personal</label>
+            <input type="number" id="review-staff" min="1" max="5" step="0.5" placeholder="1-5">
+          </div>
+          <div class="form-group">
+            <label for="review-selection">Auswahl</label>
+            <input type="number" id="review-selection" min="1" max="5" step="0.5" placeholder="1-5">
+          </div>
+          <div class="form-group">
+            <label for="review-taste">Geschmack</label>
+            <input type="number" id="review-taste" min="1" max="5" step="0.5" placeholder="1-5">
+          </div>
+          <div class="form-group">
+            <label for="review-coffee">Kaffee</label>
+            <input type="number" id="review-coffee" min="1" max="5" step="0.5" placeholder="1-5">
+          </div>
+          <div class="form-group">
+            <label for="review-price">Preis</label>
+            <input type="number" id="review-price" min="1" max="5" step="0.5" placeholder="1-5">
+          </div>
+        </div>
+
+        <div class="overall-rating">
+          <strong>Gesamtbewertung:</strong>
+          <span id="review-overall-display">-</span>
+        </div>
+
+        <div class="form-group">
+          <label for="review-note">Anmerkung</label>
+          <textarea id="review-note" rows="3" placeholder="Notizen zum Restaurant..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-review" class="btn btn-primary">Bewertung speichern</button>
+        <button class="btn btn-outline modal-close">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: EINSTELLUNGEN ===== -->
+  <div id="modal-settings" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Einstellungen</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h3>Daten sichern & synchronisieren</h3>
+        <p>💾 Exportiere deine Daten als Datei und importiere sie auf anderen Geräten.</p>
+        <div class="button-group">
+          <button id="btn-export-data" class="btn btn-secondary">📥 Daten exportieren</button>
+          <button id="btn-import-data" class="btn btn-secondary">📤 Daten importieren</button>
+        </div>
+        <input type="file" id="file-import" accept=".json" style="display: none;">
+        
+        <hr>
+        
+        <h3>Restaurant-Liste aktualisieren</h3>
+        <p>🍜 Füge 293 Restaurants zur Liste hinzu (ohne vorhandene zu überschreiben).</p>
+        <button id="btn-update-restaurants" class="btn btn-secondary">➕ Neue Restaurants hinzufügen</button>
+        
+        <hr>
+        
+        <h3>Daten zurücksetzen</h3>
+        <p>⚠️ Dies löscht alle deine Restaurants und Bewertungen und stellt die ursprünglichen Startdaten wieder her.</p>
+        <button id="btn-reset-data" class="btn btn-danger">Alle Daten zurücksetzen</button>
+        
+        <hr>
+        
+        <h3>Über die App</h3>
+        <p><strong>Restaurant Picker</strong> v1.0<br>
+        Eine mobile-first Web-App zum Verwalten und Bewerten deiner Lieblingsrestaurants.</p>
+        <p class="text-muted">💡 <strong>Tipp:</strong> Exportiere deine Daten regelmäßig als Backup und importiere sie auf anderen Geräten, um überall Zugriff zu haben!</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline modal-close">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: RESTAURANT AUSWÄHLEN FÜR BEWERTUNG ===== -->
+  <div id="modal-select-restaurant" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Welches Restaurant bewerten?</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-restaurant-name-review">Restaurantname</label>
+          <input type="text" id="input-restaurant-name-review" placeholder="Restaurantname eingeben..." list="restaurant-suggestions">
+          <datalist id="restaurant-suggestions"></datalist>
+          <small class="text-muted">💡 Gib einen Namen ein. Falls das Restaurant noch nicht existiert, wird es automatisch angelegt.</small>
+        </div>
+        <div class="form-group">
+          <label for="input-category-review">Kategorie</label>
+          <select id="input-category-review"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-confirm-restaurant-selection" class="btn btn-primary">Bewerten</button>
+        <button class="btn btn-outline modal-close">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== STARTDATEN =====
+    const INITIAL_CATEGORIES = [
+      "Asiatisch",
+      "Hausmannskost",
+      "Französisch",
+      "Italienisch",
+      "Spanisch / Mexikanisch",
+      "Ausgefallene u. Feine Küche",
+      "Heurigen / Buschenschank",
+      "Frühstück / Brunch",
+      "Steak / Fleisch",
+      "Burger",
+      "Drinks",
+      "Schweizerische Küche",
+      "Orientalische Küche",
+      "Eis",
+      "Vegetarisch / Vegan",
+      "Café"
+    ];
+
+    const INITIAL_RESTAURANTS = [
+      // Asiatische Restaurants
+      { name: "Mochi", city: "Wien", category: "Asiatisch" },
+      { name: "Mochi Ramen Bar", city: "Wien", category: "Asiatisch" },
+      { name: "Karma Ramen", city: "Wien", category: "Asiatisch" },
+      { name: "Mamamon Thai Eatery", city: "Wien", category: "Asiatisch" },
+      { name: "Shouko Ramen Bar", city: "Wien", category: "Asiatisch" },
+      { name: "Mama Liu Sons", city: "Wien", category: "Asiatisch" },
+      { name: "Yume", city: "Wien", category: "Asiatisch" },
+      { name: "Good Morning Vietnam", city: "Wien", category: "Asiatisch" },
+      { name: "ShanghaiTan", city: "Wien", category: "Asiatisch" },
+      { name: "Sohyi Kim", city: "Wien", category: "Asiatisch" },
+      { name: "Ebi", city: "Wien", category: "Asiatisch" },
+      { name: "Dots", city: "Wien", category: "Asiatisch" },
+      { name: "market restaurant", city: "Wien", category: "Asiatisch" },
+      { name: "Kantine", city: "Wien", category: "Asiatisch" },
+      { name: "Aroi Thai", city: "Wien", category: "Asiatisch" },
+      { name: "Ostwind", city: "Wien", category: "Asiatisch" },
+      { name: "Bangkok", city: "Wien", category: "Asiatisch" },
+      { name: "Restaurant On", city: "Wien", category: "Asiatisch" },
+      { name: "Lao Lao - Grandma's handpulled noodles", city: "Wien", category: "Asiatisch" },
+      { name: "Sha Guo", city: "Wien", category: "Asiatisch" },
+      { name: "Iki Restaurant", city: "Wien", category: "Asiatisch" },
+      { name: "Nihonbashi", city: "Wien", category: "Asiatisch" },
+      { name: "One Night in Beijing", city: "Wien", category: "Asiatisch" },
+      { name: "Ballroom Damn good Dumplings", city: "Wien", category: "Asiatisch" },
+      { name: "Han am Stadtpark", city: "Wien", category: "Asiatisch" },
+      { name: "Nguyensphohouse", city: "Wien", category: "Asiatisch" },
+      { name: "Nana7", city: "Wien", category: "Asiatisch" },
+      { name: "Kaoo", city: "Wien", category: "Asiatisch" },
+      { name: "Yori", city: "Wien", category: "Asiatisch" },
+      { name: "Sang Sang", city: "Wien", category: "Asiatisch" },
+      { name: "Ottoyami", city: "Wien", category: "Asiatisch" },
+      { name: "Steirasia", city: "Wien", category: "Asiatisch" },
+      { name: "Okra Izakaya - Sake & Japanese", city: "Wien", category: "Asiatisch" },
+      { name: "Shiki", city: "Wien", category: "Asiatisch" },
+      { name: "Shoyu Ramen", city: "Wien", category: "Asiatisch" },
+      { name: "China Restaurant Sichuan", city: "Wien", category: "Asiatisch" },
+      { name: "Ton Mai Thai Kitchen", city: "Wien", category: "Asiatisch" },
+      { name: "Mikata Izakaya", city: "Wien", category: "Asiatisch" },
+      { name: "Shibuya", city: "Wien", category: "Asiatisch" },
+      { name: "Tomochan Ramen", city: "Wien", category: "Asiatisch" },
+      { name: "Phosaigon", city: "Wien", category: "Asiatisch" },
+      { name: "Takumi Ramen", city: "Wien", category: "Asiatisch" },
+      { name: "Banmi", city: "Wien", category: "Asiatisch" },
+      { name: "ShooloongKan", city: "Wien", category: "Asiatisch" },
+      { name: "Momoya", city: "Wien", category: "Asiatisch" },
+      
+      // Hausmannskost
+      { name: "Knödel Manufaktur", city: "Wien", category: "Hausmannskost" },
+      { name: "Figls", city: "Wien", category: "Hausmannskost" },
+      { name: "Strandcafe alte Donau", city: "Wien", category: "Hausmannskost" },
+      { name: "Meixner", city: "Wien", category: "Hausmannskost" },
+      { name: "Alte Kaisermühle", city: "Wien", category: "Hausmannskost" },
+      { name: "Ufertaverne", city: "Wien", category: "Hausmannskost" },
+      { name: "Der Floh", city: null, category: "Hausmannskost" },
+      
+      // Französisch
+      { name: "Crepos", city: "Wien", category: "Französisch" },
+      { name: "Restaurant Léontine", city: "Wien", category: "Französisch" },
+      { name: "BEAULIEU Épicerie fine & Bistrot", city: "Wien", category: "Französisch" },
+      { name: "La Creperie", city: "Wien", category: "Französisch" },
+      { name: "Ma Belle Bistro & Bar", city: "Wien", category: "Französisch" },
+      
+      // Italienisch
+      { name: "Cantineta Antinori", city: "Wien", category: "Italienisch" },
+      { name: "Pizzeria La Mia", city: "Wien", category: "Italienisch" },
+      { name: "Pizzeria Riva Favorita", city: "Wien", category: "Italienisch" },
+      { name: "Da Capo", city: "Wien", category: "Italienisch" },
+      { name: "Il Sestante", city: "Wien", category: "Italienisch" },
+      { name: "La Spiga", city: "Wien", category: "Italienisch" },
+      { name: "Losteria", city: "Wien", category: "Italienisch" },
+      { name: "Der Italian", city: "Wr. Neustadt", category: "Italienisch" },
+      { name: "Pasta Mödling", city: "Mödling", category: "Italienisch" },
+      { name: "Regina Margarita", city: "Wien", category: "Italienisch" },
+      { name: "Cipollino", city: "Wien", category: "Italienisch" },
+      { name: "Via Toledo", city: "Wien", category: "Italienisch" },
+      { name: "Pizzeria Randale", city: "Wien", category: "Italienisch" },
+      { name: "Disco Volante", city: "Wien", category: "Italienisch" },
+      { name: "Pizzerias Lievito 48 am Markt", city: "Wien", category: "Italienisch" },
+      { name: "L'autentico", city: "Wien", category: "Italienisch" },
+      { name: "Riga", city: "Wien", category: "Italienisch" },
+      { name: "Randale", city: "Wien", category: "Italienisch" },
+      { name: "Pizza Quartier", city: "Wien", category: "Italienisch" },
+      { name: "Pizza Senza Danza", city: "Wien", category: "Italienisch" },
+      { name: "Don't call it Pizza", city: "Wien", category: "Italienisch" },
+      { name: "Ribellin", city: "Wien", category: "Italienisch" },
+      { name: "Cucina Itameshi", city: "Wien", category: "Italienisch" },
+      { name: "Pizzeria Biotto", city: "Wien", category: "Italienisch" },
+      { name: "Peng Peng by Randale", city: "Wien", category: "Italienisch" },
+      
+      // Spanisch / Mexikanisch
+      { name: "bodega marques", city: "Wien", category: "Spanisch / Mexikanisch" },
+      { name: "Lola Tapas", city: "Wien", category: "Spanisch / Mexikanisch" },
+      { name: "Santa Cruz Mexicaner", city: "Wien", category: "Spanisch / Mexikanisch" },
+      { name: "Santos Mexican Grill and Bar", city: "Wien", category: "Spanisch / Mexikanisch" },
+      { name: "Maxbenito", city: "Wien", category: "Spanisch / Mexikanisch" },
+      { name: "LA HACIENDA WILFERSDORF", city: "Wilfersdorf", category: "Spanisch / Mexikanisch" },
+      { name: "Tapas Mayas", city: "Wien", category: "Spanisch / Mexikanisch" },
+      { name: "Toma tu Tiempo", city: "Wien", category: "Spanisch / Mexikanisch" },
+      { name: "Paco Restaurant", city: "Wien", category: "Spanisch / Mexikanisch" },
+      { name: "Die Rundbar", city: "Wien", category: "Spanisch / Mexikanisch" },
+      { name: "Taqueria Los Mexikas", city: "Wien", category: "Spanisch / Mexikanisch" },
+      { name: "Tinto", city: "Wien", category: "Spanisch / Mexikanisch" },
+      
+      // Ausgefallene u. Feine Küche
+      { name: "Marina Restaurant", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Medusa", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Le Loft", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Motto", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Grande Latte", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Mole West", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Karlnberg Restaurant", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Klee am Hanlsteich", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Do&Co im Haas Haus", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "57 Restaurant", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Fabios", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Hotel Daniel Belvedere", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Blue Mustard", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Das Campus", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Hofzeile26", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Das Chadim", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Freiraum", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Tapasta", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Artner am Franziskanerplatz", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Opos", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Said The Butcher to The cow", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Markgraf Wirtshaus", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Sebastiano", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "1500 Foodmakers", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Spelunke", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Tian Restaurant", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Tian Bistro", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Veggiezz", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Swing Kitchen", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Wine & Good - Weingut Rathbauer", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Josh", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Tuya", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Feuerdorf", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Honu Tiki Bowls", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Apron", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Im Sünnhof", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Lucullus", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Yohan im Stadtpark", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Rhythms Bar & Kitchen", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Landhaus Bacher Mautern", city: null, category: "Ausgefallene u. Feine Küche" },
+      { name: "The Room", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "360 Ocean Sky - Haus des Meeres", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Zazatam", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Augenweide", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Meissl & Schadn", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Ulrichwien.at", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Café Kandl", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Batoni", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "KussMaul", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Bolena", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Boxwood", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "DiningRuhm", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Leto", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Herz und Seelen Bar", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Chalet Moeller", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "808 Restaurant & Bar", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Hemma", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Maria und Josef", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "ZweitBester", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Am Roan", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Zentruhm", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Kornat Restaurant", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Glückskind", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      { name: "Vi&Vie", city: "Wien", category: "Ausgefallene u. Feine Küche" },
+      
+      // Heurigen / Buschenschank
+      { name: "Edlmoser Wien", city: "Wien", category: "Heurigen / Buschenschank" },
+      { name: "Weingut Wieninger - Buschenschank am Nußberg", city: "Wien", category: "Heurigen / Buschenschank" },
+      { name: "Buschenschank am Heuberg - Weinbau Stippert", city: "Wien", category: "Heurigen / Buschenschank" },
+      { name: "Landauer-Gisperg", city: "Tattendorf", category: "Heurigen / Buschenschank" },
+      { name: "Kerbl am Weinberg", city: "Klosterneuburg", category: "Heurigen / Buschenschank" },
+      { name: "Weinbau Wiltschko", city: "Wien", category: "Heurigen / Buschenschank" },
+      { name: "Fuhrgassl Huber", city: "Wien", category: "Heurigen / Buschenschank" },
+      
+      // Frühstück / Brunch
+      { name: "CAFÉ GLORIETTE", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Erichwien.at", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Meierei im Stadtpark", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Blaustern", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Weltcafe", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Cafemima", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Das Kolin", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Das Augustin", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Vollpension", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Café Vindobona", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Gustl kocht", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Das Rochus", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Guesthouse", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Klyo", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Motto am Fluss", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Glashaus", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Ponykarussel – Das Café", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Das LOFT Restaurant, Bar & Lounge", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Turnhalle", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Equilibrium Kaffee", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Plain", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "La Mercerie", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Café Balleria", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Neni am Prater", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Propeller", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "& Flora", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Le Pic", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Stadtkind", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Adlerhof", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Chez Bernhard", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Le Cheri", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Volee", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Bali Brunch", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Maggaza Deli", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Goldener Papagei", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Cafemia Karmelitermarkt", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Sneak In", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Vivet", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Brandl Bäckerei", city: "Linz", category: "Frühstück / Brunch" },
+      { name: "DAS1090", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Thailanna", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Café Savoy", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Augenweide Steak-Pasta-Sushi-Brunch", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Babula Breakfast", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Wirr am Brunnenmarkt", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Café Latte Art", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Café Drechsler", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "La Jolie", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Hildebrandt Café", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Café Zehnsiebzig", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Karl und Otto", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Café tagsüber", city: "Wien", category: "Frühstück / Brunch" },
+      { name: "Paul Bakery", city: "Wien", category: "Frühstück / Brunch" },
+      
+      // Steak / Fleisch
+      { name: "El Gaucho", city: "Wien", category: "Steak / Fleisch" },
+      { name: "Da Max Huth Grill House", city: "Wien", category: "Steak / Fleisch" },
+      { name: "Livingstone", city: "Wien", category: "Steak / Fleisch" },
+      { name: "Doors No 8", city: "Wien", category: "Steak / Fleisch" },
+      { name: "Maria's Land", city: "Wien", category: "Steak / Fleisch" },
+      { name: "Beef & glory", city: "Wien", category: "Steak / Fleisch" },
+      { name: "Dstrikt", city: "Wien", category: "Steak / Fleisch" },
+      { name: "Rio", city: "Bratislava", category: "Steak / Fleisch" },
+      { name: "Eloa", city: "Wien", category: "Steak / Fleisch" },
+      
+      // Burger
+      { name: "Berliner Babo", city: "Wien", category: "Burger" },
+      { name: "Hotline5", city: "Wien", category: "Burger" },
+      { name: "XO-Grill", city: "Wien", category: "Burger" },
+      { name: "Hans im Glück", city: "Wien", category: "Burger" },
+      { name: "Brioche und Brösel", city: "Wien", category: "Burger" },
+      { name: "Shiso Burger Wien", city: "Wien", category: "Burger" },
+      { name: "Arizona Burger", city: "Wien", category: "Burger" },
+      
+      // Drinks
+      { name: "Kleinod", city: "Wien", category: "Drinks" },
+      { name: "Moby Dick Bar", city: "Wien", category: "Drinks" },
+      { name: "Botanical Garden", city: "Wien", category: "Drinks" },
+      { name: "BestensBar", city: "Wien", category: "Drinks" },
+      { name: "Josef Highball Bar", city: "Wien", category: "Drinks" },
+      { name: "Hermann Strandbad", city: "Wien", category: "Drinks" },
+      { name: "Sand in The City", city: "Wien", category: "Drinks" },
+      { name: "Summerstage", city: "Wien", category: "Drinks" },
+      { name: "100 Tage Sommer", city: "Wien", category: "Drinks" },
+      { name: "The Sign bar", city: "Wien", category: "Drinks" },
+      { name: "Dachboden Wien", city: "Wien", category: "Drinks" },
+      { name: "Krugers American Bar", city: "Wien", category: "Drinks" },
+      { name: "Atmosphere RoofTop BAR im RITZ", city: "Wien", category: "Drinks" },
+      { name: "Neu Brasilien", city: "Wien", category: "Drinks" },
+      { name: "Blue Mustard", city: "Wien", category: "Drinks" },
+      { name: "Heuer am Karlsplatz", city: "Wien", category: "Drinks" },
+      { name: "Vienna City Beach Club", city: "Wien", category: "Drinks" },
+      { name: "The Chapel", city: "Wien", category: "Drinks" },
+      { name: "Ebert's Bar", city: "Wien", category: "Drinks" },
+      { name: "Krypt Bar", city: "Wien", category: "Drinks" },
+      { name: "Birdyard", city: "Wien", category: "Drinks" },
+      { name: "If dogs run free", city: "Wien", category: "Drinks" },
+      { name: "Meinz", city: "Wien", category: "Drinks" },
+      { name: "Aurora Rooftop Bar", city: "Wien", category: "Drinks" },
+      { name: "Onyx Bar", city: "Wien", category: "Drinks" },
+      { name: "Murinsel", city: "Graz", category: "Drinks" },
+      { name: "Hannelore Bar", city: "Wien", category: "Drinks" },
+      { name: "Hotel mit Rooftop-Bar Jaz in the City", city: "Wien", category: "Drinks" },
+      { name: "Tür 7", city: "Wien", category: "Drinks" },
+      { name: "Drogeriewien", city: "Wien", category: "Drinks" },
+      { name: "Glückskind", city: "Wien", category: "Drinks" },
+      { name: "Potions", city: "Wien", category: "Drinks" },
+      { name: "Soulmate", city: "Wien", category: "Drinks" },
+      { name: "Needle Vinyl Bar", city: "Wien", category: "Drinks" },
+      { name: "Josef Cocktail Bar", city: "Wien", category: "Drinks" },
+      
+      // Schweizerische Küche
+      { name: "Restaurant Chamäleon", city: "Wien", category: "Schweizerische Küche" },
+      
+      // Orientalische Küche
+      { name: "Makom", city: "Wien", category: "Orientalische Küche" },
+      { name: "Habibi & Hawara", city: "Wien", category: "Orientalische Küche" },
+      { name: "Seven North", city: "Wien", category: "Orientalische Küche" },
+      { name: "Miznon", city: "Wien", category: "Orientalische Küche" },
+      { name: "Florentin Wien", city: "Wien", category: "Orientalische Küche" },
+      { name: "Baschly", city: "Wien", category: "Orientalische Küche" },
+      { name: "Elissar", city: "Wien", category: "Orientalische Küche" },
+      { name: "Damak", city: "Wien", category: "Orientalische Küche" },
+      { name: "Tibet Restaurant", city: "Wien", category: "Orientalische Küche" },
+      { name: "Grammophon Bistro Café", city: "Wien", category: "Orientalische Küche" },
+      { name: "Miznon Vienna", city: "Wien", category: "Orientalische Küche" },
+      
+      // Eis
+      { name: "Hanfdiele", city: "Wien", category: "Eis" },
+      
+      // Vegetarisch / Vegan
+      { name: "Vevi Restaurant", city: "Wien", category: "Vegetarisch / Vegan" },
+      { name: "Wolke", city: "Wien", category: "Vegetarisch / Vegan" },
+      { name: "Eh Wurst", city: "Wien", category: "Vegetarisch / Vegan" },
+      { name: "Pure", city: "Wien", category: "Vegetarisch / Vegan" },
+      
+      // Café
+      { name: "Jonas Reidl", city: "Wien", category: "Café" },
+      { name: "Coffee&Friends", city: "Wien", category: "Café" },
+      { name: "Café Latte", city: "Wien", category: "Café" },
+      { name: "Café Goldegg", city: "Wien", category: "Café" },
+      { name: "Gießbach Café", city: "Wien", category: "Café" },
+      { name: "WIRR Bar & Restaurant (Burggasse)", city: "Wien", category: "Café" },
+      { name: "Öfferl", city: "Wien", category: "Café" },
+      { name: "Café Friedlich", city: "Wien", category: "Café" },
+      { name: "Bean and Water", city: "Wien", category: "Café" }
+    ];
+
+    const INITIAL_REVIEWS = [
+      { name: "Benedict", city: "Berlin", ambience: 1, staff: 3, selection: 1, taste: 2, coffee: 1, price: 3, overall: 1.83 },
+      { name: "Zenith", city: "Lissabon", ambience: 2, staff: 1, selection: 1, taste: 3, coffee: 3, price: 2, overall: 2.00 },
+      { name: "Shifu Ramen", city: "Lissabon", ambience: 1, staff: 2, selection: 1, taste: 1, coffee: null, price: 2, overall: 1.40, note: "fancy / authentisch" },
+      { name: "Honua Lisbon", city: "Lissabon", ambience: 1, staff: 2, selection: 3, taste: 2, coffee: 4, price: 2, overall: 2.33, note: "die Kellnerin erinnert an die Mama von der Elli, voi cuteeee" },
+      { name: "Garden Balthazar Cafe", city: "Lissabon", ambience: 3, staff: 3, selection: 1, taste: 2, coffee: 3, price: 3, overall: 2.50 },
+      { name: "Beans & Water", city: "Wien", ambience: 1, staff: 3, selection: 3, taste: 2, coffee: 1, price: 2, overall: 2.00, note: "bester Kaffee bisher" },
+      { name: "WIRR Bar & Restaurant (Burggasse)", city: "Wien", ambience: 2, staff: 2, selection: 1, taste: 1, coffee: 1, price: 2, overall: 1.50, note: "nicht unbedingt leise, coole Ambiente, nach Bean & Water der beste Kaffee" },
+      { name: "Friedlich (hundertwasserhaus)", city: "Wien", ambience: 1, staff: 1.5, selection: 1.5, taste: 2, coffee: 2, price: 3, overall: 1.83, note: "sehr süße Location, auch wenn wir Tina dort getroffen haben" },
+      { name: "Coffee&Friends", city: "Wien", ambience: 2, staff: 3, selection: 1, taste: 1, coffee: 2, price: 2, overall: 1.83, note: "verleitet zum verweilen, sind teurer geworden" },
+      { name: "Gießbach Café", city: "Wien", ambience: 3, staff: 3, selection: 3, taste: 4, coffee: 2, price: 3, overall: 3.00, note: "sehr scharfes shakshuka" },
+      { name: "Tomochan", city: "Wien", ambience: 2, staff: 1, selection: 2, taste: 3, coffee: 2, price: 2, overall: null },
+      { name: "Little Britain", city: "Wien", ambience: 2, staff: 1, selection: 2, taste: 3, coffee: 2, price: 4, overall: 2.33, note: "sehr süßes Ambiente / bissl kitschig" },
+      { name: "Don Mono", city: "Wien", ambience: 1.5, staff: 2, selection: 1, taste: 2, coffee: 4, price: 2, overall: 2.08, note: "fancy Ambiente, störender Beamer" },
+      { name: "Öfferl Landstraße", city: "Wien", ambience: 3, staff: 1, selection: 3, taste: 2, coffee: 2, price: 4, overall: 2.50, note: "Gebäck ist extrem gut, wenig Auswahl Fürs Frühstück, trotzdem liab" },
+      { name: "Daniela Bakery", city: "Wien", ambience: 2, staff: 1, selection: 2, taste: 1, coffee: 3, price: 3, overall: 2.00, note: "Brunchen" },
+      { name: "Café Goldegg", city: "Wien", ambience: 2, staff: null, selection: null, taste: null, coffee: null, price: null, overall: null },
+      { name: "Hotline5", city: "Wien", ambience: 2, staff: 4, selection: 1, taste: 1, coffee: 3, price: null, overall: 2.20, note: "Gastgarten vorhanden (Straßen Seite)" },
+      { name: "Café Latte", city: "Wien", ambience: 1, staff: 1, selection: 2, taste: 1, coffee: 2, price: 2, overall: 1.50, note: "nur Cordon Blue probiert, wahnsinnig lieber Gastgarten" },
+      { name: "Ebi Mini", city: "Wien", ambience: 2, staff: 4, selection: 1, taste: 3, coffee: 3, price: null, overall: 2.60, note: "fancy und random Reihenfolge" }
+    ];
+
+    // ===== GLOBALER STATE =====
+    let state = {
+      categories: [],
+      restaurants: [],
+      reviews: {},
+      currentTab: 'random',
+      editingRestaurantId: null,
+      reviewingRestaurantId: null
+    };
+
+    // ===== STORAGE MANAGER =====
+    const Storage = {
+      load() {
+        try {
+          const data = localStorage.getItem('restaurantPickerData');
+          if (data) {
+            return JSON.parse(data);
+          }
+        } catch (e) {
+          console.error('Fehler beim Laden:', e);
+        }
+        return null;
+      },
+
+      save(data) {
+        try {
+          localStorage.setItem('restaurantPickerData', JSON.stringify(data));
+        } catch (e) {
+          console.error('Fehler beim Speichern:', e);
+        }
+      },
+
+      reset() {
+        localStorage.removeItem('restaurantPickerData');
+        location.reload();
+      }
+    };
+
+    // ===== HILFSFUNKTIONEN =====
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    function calculateOverall(review) {
+      const criteria = ['ambience', 'staff', 'selection', 'taste', 'coffee', 'price'];
+      const values = criteria
+        .map(key => review[key])
+        .filter(val => val !== null && val !== undefined && !isNaN(val));
+      
+      if (values.length === 0) return null;
+      return values.reduce((acc, val) => acc + val, 0) / values.length;
+    }
+
+    function saveState() {
+      Storage.save({
+        categories: state.categories,
+        restaurants: state.restaurants,
+        reviews: state.reviews
+      });
+    }
+
+    function getRestaurantById(id) {
+      return state.restaurants.find(r => r.id === id);
+    }
+
+    function getRatedRestaurants() {
+      return state.restaurants.filter(r => state.reviews[r.id]);
+    }
+
+    // ===== DATEN INITIALISIEREN =====
+    function initializeData() {
+      const savedData = Storage.load();
+      
+      if (savedData) {
+        state = { ...state, ...savedData };
+      } else {
+        state.categories = [...INITIAL_CATEGORIES];
+        state.restaurants = [];
+        state.reviews = {};
+        
+        // INITIAL_RESTAURANTS mit IDs versehen und hinzufügen
+        INITIAL_RESTAURANTS.forEach(restaurant => {
+          const newRestaurant = {
+            id: generateId(),
+            name: restaurant.name,
+            category: restaurant.category
+          };
+          state.restaurants.push(newRestaurant);
+          
+          // Stadt als Review speichern, falls vorhanden
+          if (restaurant.city) {
+            state.reviews[newRestaurant.id] = {
+              city: restaurant.city,
+              ambience: null,
+              staff: null,
+              selection: null,
+              taste: null,
+              coffee: null,
+              price: null,
+              overall: null,
+              note: null,
+              lastVisitedISO: null
+            };
+          }
+        });
+        
+        // Initial-Reviews importieren und Restaurants automatisch anlegen
+        INITIAL_REVIEWS.forEach(review => {
+          const restaurantName = review.name;
+          let restaurant = state.restaurants.find(r => r.name === restaurantName);
+          
+          if (!restaurant) {
+            const restaurantId = generateId();
+            restaurant = {
+              id: restaurantId,
+              name: restaurantName,
+              category: "Café"
+            };
+            state.restaurants.push(restaurant);
+          }
+          
+          state.reviews[restaurant.id] = {
+            city: review.city || null,
+            ambience: review.ambience || null,
+            staff: review.staff || null,
+            selection: review.selection || null,
+            taste: review.taste || null,
+            coffee: review.coffee || null,
+            price: review.price || null,
+            overall: review.overall || calculateOverall(review),
+            note: review.note || null,
+            lastVisitedISO: new Date().toISOString()
+          };
+        });
+        
+        saveState();
+      }
+    }
+
+    // ===== TAB NAVIGATION =====
+    function initTabNavigation() {
+      const navItems = document.querySelectorAll('.nav-item');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const targetTab = item.dataset.tab;
+          
+          if (targetTab === 'settings') {
+            openModal('modal-settings');
+            return;
+          }
+          
+          navItems.forEach(nav => nav.classList.remove('active'));
+          item.classList.add('active');
+          
+          tabContents.forEach(content => content.classList.remove('active'));
+          const activeTab = document.getElementById(`tab-${targetTab}`);
+          if (activeTab) {
+            activeTab.classList.add('active');
+            state.currentTab = targetTab;
+            
+            if (targetTab === 'list') renderRestaurantList();
+            if (targetTab === 'rated') renderRatedRestaurants();
+          }
+        });
+      });
+    }
+
+    // ===== MODAL MANAGEMENT =====
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    }
+
+    function initModals() {
+      document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const modal = e.target.closest('.modal');
+          if (modal) closeModal(modal.id);
+        });
+      });
+      
+      document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeModal(modal.id);
+          }
+        });
+      });
+    }
+
+    // ===== TAB 1: ZUFALL =====
+    function initRandomTab() {
+      renderCategoryCheckboxes();
+      
+      const categoryAll = document.getElementById('category-all');
+      categoryAll.addEventListener('change', (e) => {
+        const checkboxes = document.querySelectorAll('#category-list input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+      });
+      
+      document.getElementById('btn-random-pick').addEventListener('click', pickRandomRestaurant);
+      
+      document.getElementById('btn-random-review').addEventListener('click', () => {
+        const restaurantId = document.getElementById('random-result').dataset.restaurantId;
+        if (restaurantId) openReviewModal(restaurantId);
+      });
+      
+      document.getElementById('btn-random-again').addEventListener('click', pickRandomRestaurant);
+      
+      document.getElementById('btn-random-to-list').addEventListener('click', () => {
+        document.querySelector('[data-tab="list"]').click();
+      });
+    }
+
+    function renderCategoryCheckboxes() {
+      const container = document.getElementById('category-list');
+      container.innerHTML = '';
+      
+      state.categories.forEach(category => {
+        const label = document.createElement('label');
+        label.className = 'category-checkbox';
+        label.innerHTML = `
+          <input type="checkbox" value="${category}" checked>
+          <span>${category}</span>
+        `;
+        container.appendChild(label);
+      });
+    }
+
+    function pickRandomRestaurant() {
+      const selectedCategories = [];
+      const checkboxes = document.querySelectorAll('#category-list input[type="checkbox"]:checked');
+      checkboxes.forEach(cb => selectedCategories.push(cb.value));
+      
+      if (selectedCategories.length === 0) {
+        alert('Bitte wähle mindestens eine Kategorie aus!');
+        return;
+      }
+      
+      const availableRestaurants = state.restaurants.filter(r => 
+        selectedCategories.includes(r.category)
+      );
+      
+      if (availableRestaurants.length === 0) {
+        alert('Keine Restaurants in den ausgewählten Kategorien gefunden!');
+        return;
+      }
+      
+      const randomRestaurant = availableRestaurants[Math.floor(Math.random() * availableRestaurants.length)];
+      displayRandomResult(randomRestaurant);
+    }
+
+    function displayRandomResult(restaurant) {
+      const resultCard = document.getElementById('random-result');
+      const emptyState = document.getElementById('random-empty');
+      
+      document.getElementById('random-restaurant-name').textContent = restaurant.name;
+      document.getElementById('random-restaurant-category').textContent = restaurant.category;
+      
+      const review = state.reviews[restaurant.id];
+      const cityElement = document.getElementById('random-restaurant-city');
+      if (review && review.city) {
+        cityElement.textContent = `📍 ${review.city}`;
+        cityElement.style.display = 'block';
+      } else {
+        cityElement.style.display = 'none';
+      }
+      
+      resultCard.dataset.restaurantId = restaurant.id;
+      resultCard.style.display = 'block';
+      emptyState.style.display = 'none';
+    }
+
+    // ===== TAB 2: LISTE =====
+    function initListTab() {
+      document.getElementById('btn-add-restaurant').addEventListener('click', () => {
+        openAddRestaurantModal();
+      });
+      
+      document.getElementById('search-input').addEventListener('input', (e) => {
+        renderRestaurantList(e.target.value);
+      });
+      
+      renderRestaurantList();
+    }
+
+    function renderRestaurantList(searchTerm = '') {
+      const accordion = document.getElementById('restaurant-accordion');
+      const emptyState = document.getElementById('list-empty');
+      
+      let filteredRestaurants = state.restaurants;
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filteredRestaurants = state.restaurants.filter(r => 
+          r.name.toLowerCase().includes(term)
+        );
+      }
+      
+      if (state.restaurants.length === 0) {
+        emptyState.style.display = 'block';
+        accordion.innerHTML = '';
+        return;
+      }
+      
+      emptyState.style.display = 'none';
+      accordion.innerHTML = '';
+      
+      const groupedByCategory = {};
+      state.categories.forEach(cat => {
+        groupedByCategory[cat] = filteredRestaurants.filter(r => r.category === cat);
+      });
+      
+      state.categories.forEach(category => {
+        const restaurants = groupedByCategory[category];
+        if (restaurants.length === 0) return;
+        
+        const item = document.createElement('div');
+        item.className = 'accordion-item';
+        
+        const header = document.createElement('div');
+        header.className = 'accordion-header';
+        header.innerHTML = `
+          <span>${category}</span>
+          <span class="count">${restaurants.length}</span>
+        `;
+        
+        const content = document.createElement('div');
+        content.className = 'accordion-content';
+        
+        restaurants.forEach(restaurant => {
+          const restaurantDiv = document.createElement('div');
+          restaurantDiv.className = 'restaurant-item';
+          
+          const review = state.reviews[restaurant.id];
+          const cityInfo = review && review.city ? `<span class="text-muted">📍 ${review.city}</span>` : '';
+          
+          // Prüfe ob Restaurant bewertet ist
+          const isRated = review && (review.ambience !== null || review.staff !== null || 
+                                     review.selection !== null || review.taste !== null || 
+                                     review.coffee !== null || review.price !== null);
+          const ratedBadge = isRated ? `<span class="badge" style="background: #40916c; margin-left: 8px;">✓ Bewertet</span>` : '';
+          
+          restaurantDiv.innerHTML = `
+            <div class="restaurant-info">
+              <div class="restaurant-name">${restaurant.name}${ratedBadge}</div>
+              ${cityInfo}
+            </div>
+            <div class="restaurant-actions">
+              <button class="btn btn-secondary btn-small" onclick="openReviewModal('${restaurant.id}')">Bewerten</button>
+              <button class="btn btn-outline btn-small" onclick="openEditRestaurantModal('${restaurant.id}')">Bearbeiten</button>
+              <button class="btn btn-danger btn-small" onclick="deleteRestaurant('${restaurant.id}')">Löschen</button>
+            </div>
+          `;
+          
+          content.appendChild(restaurantDiv);
+        });
+        
+        header.addEventListener('click', () => {
+          content.classList.toggle('open');
+        });
+        
+        item.appendChild(header);
+        item.appendChild(content);
+        accordion.appendChild(item);
+      });
+    }
+
+    // ===== TAB 3: BEWERTET =====
+    function initRatedTab() {
+      populateFilterSelects();
+      document.getElementById('btn-apply-filters').addEventListener('click', renderRatedRestaurants);
+      document.getElementById('btn-add-review').addEventListener('click', openSelectRestaurantModal);
+      renderRatedRestaurants();
+    }
+
+    function populateFilterSelects() {
+      const categorySelect = document.getElementById('filter-category');
+      categorySelect.innerHTML = '<option value="">Alle Kategorien</option>';
+      state.categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        categorySelect.appendChild(option);
+      });
+      
+      const cities = new Set();
+      Object.values(state.reviews).forEach(review => {
+        if (review.city) cities.add(review.city);
+      });
+      
+      const citySelect = document.getElementById('filter-city');
+      citySelect.innerHTML = '<option value="">Alle Städte</option>';
+      Array.from(cities).sort().forEach(city => {
+        const option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        citySelect.appendChild(option);
+      });
+    }
+
+    function renderRatedRestaurants() {
+      const container = document.getElementById('rated-list');
+      const emptyState = document.getElementById('rated-empty');
+      
+      let ratedRestaurants = getRatedRestaurants();
+      
+      if (ratedRestaurants.length === 0) {
+        emptyState.style.display = 'block';
+        container.innerHTML = '';
+        return;
+      }
+      
+      emptyState.style.display = 'none';
+      
+      const minRating = parseFloat(document.getElementById('filter-min-rating').value);
+      const filterCategory = document.getElementById('filter-category').value;
+      const filterCity = document.getElementById('filter-city').value;
+      
+      ratedRestaurants = ratedRestaurants.filter(restaurant => {
+        const review = state.reviews[restaurant.id];
+        
+        if (!isNaN(minRating) && review.overall !== null) {
+          const overall = review.overall || calculateOverall(review);
+          if (overall < minRating) return false;
+        }
+        
+        if (filterCategory && restaurant.category !== filterCategory) return false;
+        if (filterCity && review.city !== filterCity) return false;
+        
+        return true;
+      });
+      
+      const sortBy = document.getElementById('sort-by').value;
+      ratedRestaurants.sort((a, b) => {
+        const reviewA = state.reviews[a.id];
+        const reviewB = state.reviews[b.id];
+        
+        if (sortBy === 'recent') {
+          const dateA = reviewA.lastVisitedISO ? new Date(reviewA.lastVisitedISO) : new Date(0);
+          const dateB = reviewB.lastVisitedISO ? new Date(reviewB.lastVisitedISO) : new Date(0);
+          return dateB - dateA;
+        } else if (sortBy === 'best') {
+          const overallA = reviewA.overall || calculateOverall(reviewA) || 0;
+          const overallB = reviewB.overall || calculateOverall(reviewB) || 0;
+          return overallA - overallB; // Niedrigste Werte = beste Bewertungen (wie Schulnoten)
+        } else {
+          return a.name.localeCompare(b.name);
+        }
+      });
+      
+      container.innerHTML = '';
+      ratedRestaurants.forEach(restaurant => {
+        const review = state.reviews[restaurant.id];
+        const overall = review.overall || calculateOverall(review);
+        
+        const card = document.createElement('div');
+        card.className = 'card rated-card';
+        
+        let detailsHTML = '';
+        const criteria = [
+          { key: 'ambience', label: 'Ambiente' },
+          { key: 'staff', label: 'Personal' },
+          { key: 'selection', label: 'Auswahl' },
+          { key: 'taste', label: 'Geschmack' },
+          { key: 'coffee', label: 'Kaffee' },
+          { key: 'price', label: 'Preis' }
+        ];
+        
+        criteria.forEach(crit => {
+          if (review[crit.key] !== null && review[crit.key] !== undefined) {
+            detailsHTML += `
+              <div class="rating-item">
+                <span class="rating-label">${crit.label}</span>
+                <span class="rating-value">${review[crit.key].toFixed(1)}</span>
+              </div>
+            `;
+          }
+        });
+        
+        const noteHTML = review.note ? `<div class="rated-note">💭 ${review.note}</div>` : '';
+        const cityHTML = review.city ? `<span class="badge">📍 ${review.city}</span>` : '';
+        const categoryHTML = `<span class="badge">${restaurant.category}</span>`;
+        
+        const lastVisited = review.lastVisitedISO 
+          ? new Date(review.lastVisitedISO).toLocaleDateString('de-DE')
+          : 'Unbekannt';
+        
+        card.innerHTML = `
+          <div class="rated-header">
+            <div>
+              <div class="rated-name">${restaurant.name}</div>
+            </div>
+            ${overall !== null ? `<div class="overall-badge">${overall.toFixed(2)}</div>` : ''}
+          </div>
+          <div class="rated-meta">
+            ${categoryHTML}
+            ${cityHTML}
+            <span class="text-muted">🕒 ${lastVisited}</span>
+          </div>
+          <div class="rating-details">
+            ${detailsHTML}
+          </div>
+          ${noteHTML}
+          <div class="button-group">
+            <button class="btn btn-secondary btn-small" onclick="openReviewModal('${restaurant.id}')">Bearbeiten</button>
+            <button class="btn btn-outline btn-small" onclick="openEditRestaurantModal('${restaurant.id}')">Restaurant bearbeiten</button>
+          </div>
+        `;
+        
+        container.appendChild(card);
+      });
+    }
+
+    // ===== RESTAURANT MODAL =====
+    function openAddRestaurantModal() {
+      state.editingRestaurantId = null;
+      document.getElementById('modal-restaurant-title').textContent = 'Restaurant hinzufügen';
+      
+      document.getElementById('input-restaurant-name').value = '';
+      document.getElementById('input-restaurant-city').value = '';
+      
+      const categorySelect = document.getElementById('input-restaurant-category');
+      categorySelect.innerHTML = '';
+      state.categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        categorySelect.appendChild(option);
+      });
+      
+      openModal('modal-restaurant');
+    }
+
+    function openEditRestaurantModal(restaurantId) {
+      state.editingRestaurantId = restaurantId;
+      const restaurant = getRestaurantById(restaurantId);
+      const review = state.reviews[restaurantId];
+      
+      document.getElementById('modal-restaurant-title').textContent = 'Restaurant bearbeiten';
+      document.getElementById('input-restaurant-name').value = restaurant.name;
+      document.getElementById('input-restaurant-city').value = review?.city || '';
+      
+      const categorySelect = document.getElementById('input-restaurant-category');
+      categorySelect.innerHTML = '';
+      state.categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        if (cat === restaurant.category) option.selected = true;
+        categorySelect.appendChild(option);
+      });
+      
+      openModal('modal-restaurant');
+    }
+
+    function saveRestaurant() {
+      const name = document.getElementById('input-restaurant-name').value.trim();
+      const category = document.getElementById('input-restaurant-category').value;
+      const city = document.getElementById('input-restaurant-city').value.trim();
+      
+      if (!name) {
+        alert('Bitte gib einen Restaurantnamen ein!');
+        return;
+      }
+      
+      if (state.editingRestaurantId) {
+        const restaurant = getRestaurantById(state.editingRestaurantId);
+        restaurant.name = name;
+        restaurant.category = category;
+        
+        if (state.reviews[state.editingRestaurantId]) {
+          state.reviews[state.editingRestaurantId].city = city || null;
+        }
+      } else {
+        const newRestaurant = {
+          id: generateId(),
+          name: name,
+          category: category
+        };
+        state.restaurants.push(newRestaurant);
+        
+        if (city) {
+          state.reviews[newRestaurant.id] = {
+            city: city,
+            ambience: null,
+            staff: null,
+            selection: null,
+            taste: null,
+            coffee: null,
+            price: null,
+            overall: null,
+            note: null,
+            lastVisitedISO: null
+          };
+        }
+      }
+      
+      saveState();
+      renderRestaurantList();
+      renderRatedRestaurants();
+      closeModal('modal-restaurant');
+    }
+
+    function deleteRestaurant(restaurantId) {
+      const restaurant = getRestaurantById(restaurantId);
+      if (!restaurant) return;
+      
+      if (confirm(`Restaurant "${restaurant.name}" wirklich löschen?`)) {
+        state.restaurants = state.restaurants.filter(r => r.id !== restaurantId);
+        delete state.reviews[restaurantId];
+        saveState();
+        renderRestaurantList();
+        renderRatedRestaurants();
+      }
+    }
+
+    // ===== REVIEW MODAL =====
+    function openSelectRestaurantModal() {
+      // Eingabefeld leeren
+      document.getElementById('input-restaurant-name-review').value = '';
+      
+      // Autocomplete mit vorhandenen Restaurants füllen
+      const datalist = document.getElementById('restaurant-suggestions');
+      datalist.innerHTML = '';
+      
+      const sortedRestaurants = [...state.restaurants].sort((a, b) => a.name.localeCompare(b.name));
+      sortedRestaurants.forEach(restaurant => {
+        const option = document.createElement('option');
+        option.value = restaurant.name;
+        datalist.appendChild(option);
+      });
+      
+      // Kategorien füllen
+      const categorySelect = document.getElementById('input-category-review');
+      categorySelect.innerHTML = '';
+      state.categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        categorySelect.appendChild(option);
+      });
+      
+      openModal('modal-select-restaurant');
+    }
+
+    function openReviewModal(restaurantId) {
+      state.reviewingRestaurantId = restaurantId;
+      const restaurant = getRestaurantById(restaurantId);
+      const review = state.reviews[restaurantId] || {};
+      
+      document.getElementById('modal-review-title').textContent = `${restaurant.name} bewerten`;
+      
+      document.getElementById('review-city').value = review.city || '';
+      document.getElementById('review-ambience').value = review.ambience || '';
+      document.getElementById('review-staff').value = review.staff || '';
+      document.getElementById('review-selection').value = review.selection || '';
+      document.getElementById('review-taste').value = review.taste || '';
+      document.getElementById('review-coffee').value = review.coffee || '';
+      document.getElementById('review-price').value = review.price || '';
+      document.getElementById('review-note').value = review.note || '';
+      
+      updateOverallDisplay();
+      openModal('modal-review');
+    }
+
+    function updateOverallDisplay() {
+      const values = [
+        'review-ambience',
+        'review-staff',
+        'review-selection',
+        'review-taste',
+        'review-coffee',
+        'review-price'
+      ].map(id => parseFloat(document.getElementById(id).value))
+       .filter(val => !isNaN(val));
+      
+      const display = document.getElementById('review-overall-display');
+      
+      if (values.length === 0) {
+        display.textContent = '-';
+      } else {
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        display.textContent = avg.toFixed(2);
+      }
+    }
+
+    function saveReview() {
+      if (!state.reviewingRestaurantId) return;
+      
+      const review = {
+        city: document.getElementById('review-city').value.trim() || null,
+        ambience: parseFloat(document.getElementById('review-ambience').value) || null,
+        staff: parseFloat(document.getElementById('review-staff').value) || null,
+        selection: parseFloat(document.getElementById('review-selection').value) || null,
+        taste: parseFloat(document.getElementById('review-taste').value) || null,
+        coffee: parseFloat(document.getElementById('review-coffee').value) || null,
+        price: parseFloat(document.getElementById('review-price').value) || null,
+        note: document.getElementById('review-note').value.trim() || null,
+        lastVisitedISO: new Date().toISOString()
+      };
+      
+      review.overall = calculateOverall(review);
+      
+      state.reviews[state.reviewingRestaurantId] = review;
+      saveState();
+      
+      renderRestaurantList();
+      renderRatedRestaurants();
+      populateFilterSelects();
+      
+      closeModal('modal-review');
+    }
+
+    // ===== EINSTELLUNGEN =====
+    function initSettings() {
+      document.getElementById('btn-reset-data').addEventListener('click', () => {
+        if (confirm('⚠️ Wirklich alle Daten zurücksetzen? Dies kann nicht rückgängig gemacht werden!')) {
+          Storage.reset();
+        }
+      });
+      
+      // Update Restaurants Button
+      document.getElementById('btn-update-restaurants').addEventListener('click', () => {
+        updateRestaurantsFromInitial();
+      });
+      
+      // Export-Funktion
+      document.getElementById('btn-export-data').addEventListener('click', () => {
+        exportData();
+      });
+      
+      // Import-Funktion
+      document.getElementById('btn-import-data').addEventListener('click', () => {
+        document.getElementById('file-import').click();
+      });
+      
+      document.getElementById('file-import').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          importData(file);
+        }
+      });
+    }
+    
+    function updateRestaurantsFromInitial() {
+      let addedCount = 0;
+      
+      INITIAL_RESTAURANTS.forEach(restaurant => {
+        // Prüfen, ob Restaurant bereits existiert (case-insensitive)
+        const exists = state.restaurants.some(r => 
+          r.name.toLowerCase() === restaurant.name.toLowerCase()
+        );
+        
+        if (!exists) {
+          const newRestaurant = {
+            id: generateId(),
+            name: restaurant.name,
+            category: restaurant.category
+          };
+          state.restaurants.push(newRestaurant);
+          
+          // Stadt als Review speichern, falls vorhanden
+          if (restaurant.city) {
+            state.reviews[newRestaurant.id] = {
+              city: restaurant.city,
+              ambience: null,
+              staff: null,
+              selection: null,
+              taste: null,
+              coffee: null,
+              price: null,
+              overall: null,
+              note: null,
+              lastVisitedISO: null
+            };
+          }
+          
+          addedCount++;
+        }
+      });
+      
+      if (addedCount > 0) {
+        saveState();
+        renderRestaurantList();
+        renderRatedRestaurants();
+        renderCategoryCheckboxes();
+        alert(`✅ ${addedCount} neue Restaurants hinzugefügt!`);
+      } else {
+        alert('ℹ️ Alle Restaurants sind bereits vorhanden.');
+      }
+    }
+    
+    function exportData() {
+      const dataToExport = {
+        categories: state.categories,
+        restaurants: state.restaurants,
+        reviews: state.reviews,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+      };
+      
+      const jsonString = JSON.stringify(dataToExport, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      const timestamp = new Date().toISOString().split('T')[0];
+      a.download = `restaurant-picker-backup-${timestamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      alert('✅ Daten erfolgreich exportiert!');
+    }
+    
+    function importData(file) {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          
+          // Validierung
+          if (!importedData.categories || !importedData.restaurants || !importedData.reviews) {
+            throw new Error('Ungültiges Dateiformat');
+          }
+          
+          // Bestätigung vor dem Überschreiben
+          const confirmMsg = `📥 Import gefunden:\n\n` +
+            `Restaurants: ${importedData.restaurants.length}\n` +
+            `Bewertungen: ${Object.keys(importedData.reviews).length}\n` +
+            `Export-Datum: ${importedData.exportDate ? new Date(importedData.exportDate).toLocaleString('de-DE') : 'Unbekannt'}\n\n` +
+            `⚠️ Deine aktuellen Daten werden überschrieben!\n\n` +
+            `Fortfahren?`;
+          
+          if (confirm(confirmMsg)) {
+            state.categories = importedData.categories;
+            state.restaurants = importedData.restaurants;
+            state.reviews = importedData.reviews;
+            
+            saveState();
+            
+            // UI aktualisieren
+            renderRestaurantList();
+            renderRatedRestaurants();
+            renderCategoryCheckboxes();
+            populateFilterSelects();
+            
+            alert('✅ Daten erfolgreich importiert!');
+            closeModal('modal-settings');
+          }
+        } catch (error) {
+          alert('❌ Fehler beim Importieren: ' + error.message);
+        }
+        
+        // Input zurücksetzen für erneuten Import
+        document.getElementById('file-import').value = '';
+      };
+      
+      reader.onerror = () => {
+        alert('❌ Fehler beim Lesen der Datei');
+      };
+      
+      reader.readAsText(file);
+    }
+
+    // ===== EVENT LISTENERS =====
+    function initReviewListeners() {
+      const reviewFields = [
+        'review-ambience',
+        'review-staff',
+        'review-selection',
+        'review-taste',
+        'review-coffee',
+        'review-price'
+      ];
+      
+      reviewFields.forEach(fieldId => {
+        document.getElementById(fieldId).addEventListener('input', updateOverallDisplay);
+      });
+    }
+
+    // ===== GLOBALE FUNKTIONEN =====
+    window.openReviewModal = openReviewModal;
+    window.openEditRestaurantModal = openEditRestaurantModal;
+    window.deleteRestaurant = deleteRestaurant;
+
+    // ===== INITIALISIERUNG =====
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeData();
+      initTabNavigation();
+      initModals();
+      initRandomTab();
+      initListTab();
+      initRatedTab();
+      initSettings();
+      initReviewListeners();
+      
+      document.getElementById('btn-save-restaurant').addEventListener('click', saveRestaurant);
+      document.getElementById('btn-save-review').addEventListener('click', saveReview);
+      document.getElementById('btn-confirm-restaurant-selection').addEventListener('click', () => {
+        const restaurantName = document.getElementById('input-restaurant-name-review').value.trim();
+        const category = document.getElementById('input-category-review').value;
+        
+        if (!restaurantName) {
+          alert('Bitte gib einen Restaurantnamen ein!');
+          return;
+        }
+        
+        // Prüfen, ob Restaurant bereits existiert
+        let restaurant = state.restaurants.find(r => r.name.toLowerCase() === restaurantName.toLowerCase());
+        
+        if (!restaurant) {
+          // Neues Restaurant anlegen
+          restaurant = {
+            id: generateId(),
+            name: restaurantName,
+            category: category
+          };
+          state.restaurants.push(restaurant);
+          saveState();
+        }
+        
+        closeModal('modal-select-restaurant');
+        openReviewModal(restaurant.id);
+      });
+      
+      console.log('🍽️ Restaurant Picker erfolgreich geladen!');
+    });
+  </script>
+</body>
+</html>
