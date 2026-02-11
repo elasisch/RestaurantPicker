@@ -877,8 +877,8 @@
           <input type="text" id="input-restaurant-name" required>
         </div>
         <div class="form-group">
-          <label for="input-restaurant-category">Kategorie *</label>
-          <select id="input-restaurant-category"></select>
+          <label>Kategorien * (mindestens eine)</label>
+          <div id="input-restaurant-categories" style="max-height: 200px; overflow-y: auto; border: 2px solid var(--border-color); border-radius: 8px; padding: var(--spacing-sm);"></div>
         </div>
         <div class="form-group">
           <label for="input-restaurant-city">Stadt</label>
@@ -1640,9 +1640,11 @@
         return;
       }
       
-      const availableRestaurants = state.restaurants.filter(r => 
-        selectedCategories.includes(r.category)
-      );
+      const availableRestaurants = state.restaurants.filter(r => {
+        // Unterstütze sowohl alte (category) als auch neue (categories) Datenstruktur
+        const restaurantCategories = r.categories || (r.category ? [r.category] : []);
+        return restaurantCategories.some(cat => selectedCategories.includes(cat));
+      });
       
       if (availableRestaurants.length === 0) {
         alert('Keine Restaurants in den ausgewählten Kategorien gefunden!');
@@ -1658,7 +1660,10 @@
       const emptyState = document.getElementById('random-empty');
       
       document.getElementById('random-restaurant-name').textContent = restaurant.name;
-      document.getElementById('random-restaurant-category').textContent = restaurant.category;
+      
+      // Zeige alle Kategorien
+      const restaurantCategories = restaurant.categories || (restaurant.category ? [restaurant.category] : []);
+      document.getElementById('random-restaurant-category').textContent = restaurantCategories.join(' • ');
       
       const review = state.reviews[restaurant.id];
       const cityElement = document.getElementById('random-restaurant-city');
@@ -1710,7 +1715,11 @@
       
       const groupedByCategory = {};
       state.categories.forEach(cat => {
-        groupedByCategory[cat] = filteredRestaurants.filter(r => r.category === cat);
+        groupedByCategory[cat] = filteredRestaurants.filter(r => {
+          // Unterstütze sowohl alte (category) als auch neue (categories) Datenstruktur
+          const restaurantCategories = r.categories || (r.category ? [r.category] : []);
+          return restaurantCategories.includes(cat);
+        });
       });
       
       state.categories.forEach(category => {
@@ -1743,9 +1752,16 @@
                                      review.coffee !== null || review.price !== null);
           const ratedBadge = isRated ? `<span class="badge" style="background: #40916c; margin-left: 8px;">✓ Bewertet</span>` : '';
           
+          // Zeige alle Kategorien als Badges
+          const restaurantCategories = restaurant.categories || (restaurant.category ? [restaurant.category] : []);
+          const categoryBadges = restaurantCategories.map(cat => 
+            `<span class="badge" style="background: #6c757d; font-size: 0.75rem; margin-right: 4px;">${cat}</span>`
+          ).join('');
+          
           restaurantDiv.innerHTML = `
             <div class="restaurant-info">
               <div class="restaurant-name">${restaurant.name}${ratedBadge}</div>
+              <div style="margin-top: 4px;">${categoryBadges}</div>
               ${cityInfo}
             </div>
             <div class="restaurant-actions">
@@ -1827,7 +1843,11 @@
           if (overall < minRating) return false;
         }
         
-        if (filterCategory && restaurant.category !== filterCategory) return false;
+        if (filterCategory) {
+          // Unterstütze sowohl alte (category) als auch neue (categories) Datenstruktur
+          const restaurantCategories = restaurant.categories || (restaurant.category ? [restaurant.category] : []);
+          if (!restaurantCategories.includes(filterCategory)) return false;
+        }
         if (filterCity && review.city !== filterCity) return false;
         
         return true;
@@ -1882,7 +1902,12 @@
         
         const noteHTML = review.note ? `<div class="rated-note">💭 ${review.note}</div>` : '';
         const cityHTML = review.city ? `<span class="badge">📍 ${review.city}</span>` : '';
-        const categoryHTML = `<span class="badge">${restaurant.category}</span>`;
+        
+        // Zeige alle Kategorien
+        const restaurantCategories = restaurant.categories || (restaurant.category ? [restaurant.category] : []);
+        const categoryHTML = restaurantCategories.map(cat => 
+          `<span class="badge">${cat}</span>`
+        ).join(' ');
         
         const lastVisited = review.lastVisitedISO 
           ? new Date(review.lastVisitedISO).toLocaleDateString('de-DE')
@@ -1921,14 +1946,20 @@
       
       document.getElementById('input-restaurant-name').value = '';
       document.getElementById('input-restaurant-city').value = '';
+      document.getElementById('input-restaurant-link').value = '';
       
-      const categorySelect = document.getElementById('input-restaurant-category');
-      categorySelect.innerHTML = '';
+      const categoryContainer = document.getElementById('input-restaurant-categories');
+      categoryContainer.innerHTML = '';
       state.categories.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        categorySelect.appendChild(option);
+        const label = document.createElement('label');
+        label.style.display = 'block';
+        label.style.padding = '0.5rem';
+        label.style.cursor = 'pointer';
+        label.innerHTML = `
+          <input type="checkbox" value="${cat}" style="margin-right: 8px;">
+          <span>${cat}</span>
+        `;
+        categoryContainer.appendChild(label);
       });
       
       openModal('modal-restaurant');
@@ -1942,15 +1973,24 @@
       document.getElementById('modal-restaurant-title').textContent = 'Restaurant bearbeiten';
       document.getElementById('input-restaurant-name').value = restaurant.name;
       document.getElementById('input-restaurant-city').value = review?.city || '';
+      document.getElementById('input-restaurant-link').value = restaurant.link || '';
       
-      const categorySelect = document.getElementById('input-restaurant-category');
-      categorySelect.innerHTML = '';
+      // Unterstütze sowohl alte (category) als auch neue (categories) Datenstruktur
+      const restaurantCategories = restaurant.categories || (restaurant.category ? [restaurant.category] : []);
+      
+      const categoryContainer = document.getElementById('input-restaurant-categories');
+      categoryContainer.innerHTML = '';
       state.categories.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        option.textContent = cat;
-        if (cat === restaurant.category) option.selected = true;
-        categorySelect.appendChild(option);
+        const label = document.createElement('label');
+        label.style.display = 'block';
+        label.style.padding = '0.5rem';
+        label.style.cursor = 'pointer';
+        const isChecked = restaurantCategories.includes(cat);
+        label.innerHTML = `
+          <input type="checkbox" value="${cat}" ${isChecked ? 'checked' : ''} style="margin-right: 8px;">
+          <span>${cat}</span>
+        `;
+        categoryContainer.appendChild(label);
       });
       
       openModal('modal-restaurant');
@@ -1958,18 +1998,28 @@
 
     function saveRestaurant() {
       const name = document.getElementById('input-restaurant-name').value.trim();
-      const category = document.getElementById('input-restaurant-category').value;
       const city = document.getElementById('input-restaurant-city').value.trim();
+      const link = document.getElementById('input-restaurant-link').value.trim();
+      
+      // Sammle ausgewählte Kategorien
+      const checkboxes = document.querySelectorAll('#input-restaurant-categories input[type="checkbox"]:checked');
+      const categories = Array.from(checkboxes).map(cb => cb.value);
       
       if (!name) {
         alert('Bitte gib einen Restaurantnamen ein!');
         return;
       }
       
+      if (categories.length === 0) {
+        alert('Bitte wähle mindestens eine Kategorie aus!');
+        return;
+      }
+      
       if (state.editingRestaurantId) {
         const restaurant = getRestaurantById(state.editingRestaurantId);
         restaurant.name = name;
-        restaurant.category = category;
+        restaurant.categories = categories;
+        restaurant.link = link || null;
         
         if (state.reviews[state.editingRestaurantId]) {
           state.reviews[state.editingRestaurantId].city = city || null;
@@ -1978,7 +2028,8 @@
         const newRestaurant = {
           id: generateId(),
           name: name,
-          category: category
+          categories: categories,
+          link: link || null
         };
         state.restaurants.push(newRestaurant);
         
