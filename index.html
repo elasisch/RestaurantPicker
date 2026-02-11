@@ -1741,6 +1741,9 @@
         const restaurants = groupedByCategory[category];
         if (restaurants.length === 0) return;
         
+        // Sortiere Restaurants alphabetisch nach Name
+        restaurants.sort((a, b) => a.name.localeCompare(b.name));
+        
         const item = document.createElement('div');
         item.className = 'accordion-item';
         
