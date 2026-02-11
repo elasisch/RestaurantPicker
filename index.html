@@ -884,6 +884,10 @@
           <label for="input-restaurant-city">Stadt</label>
           <input type="text" id="input-restaurant-city">
         </div>
+        <div class="form-group">
+          <label for="input-restaurant-link">Link (z.B. Website, Google Maps)</label>
+          <input type="url" id="input-restaurant-link" placeholder="https://...">
+        </div>
       </div>
       <div class="modal-footer">
         <button id="btn-save-restaurant" class="btn btn-primary">Speichern</button>
@@ -1454,7 +1458,18 @@
     }
 
     function getRatedRestaurants() {
-      return state.restaurants.filter(r => state.reviews[r.id]);
+      return state.restaurants.filter(r => {
+        const review = state.reviews[r.id];
+        if (!review) return false;
+        
+        // Nur Restaurants mit mindestens einem ausgefüllten Bewertungskriterium
+        return review.ambience !== null || 
+               review.staff !== null || 
+               review.selection !== null || 
+               review.taste !== null || 
+               review.coffee !== null || 
+               review.price !== null;
+      });
     }
 
     // ===== DATEN INITIALISIEREN =====
@@ -1863,9 +1878,16 @@
           const dateB = reviewB.lastVisitedISO ? new Date(reviewB.lastVisitedISO) : new Date(0);
           return dateB - dateA;
         } else if (sortBy === 'best') {
-          const overallA = reviewA.overall || calculateOverall(reviewA) || 0;
-          const overallB = reviewB.overall || calculateOverall(reviewB) || 0;
-          return overallA - overallB; // Niedrigste Werte = beste Bewertungen (wie Schulnoten)
+          const overallA = reviewA.overall || calculateOverall(reviewA);
+          const overallB = reviewB.overall || calculateOverall(reviewB);
+          
+          // Restaurants ohne Bewertung ans Ende
+          if (overallA === null && overallB === null) return 0;
+          if (overallA === null) return 1;
+          if (overallB === null) return -1;
+          
+          // Niedrigste Werte = beste Bewertungen (wie Schulnoten: 1 = sehr gut, 5 = mangelhaft)
+          return overallA - overallB;
         } else {
           return a.name.localeCompare(b.name);
         }
